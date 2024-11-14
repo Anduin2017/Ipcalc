@@ -1,5 +1,6 @@
 import { useState } from "react";
 import CalculateNetworkInfo from "./CalculateNetworkInfo";
+import CopyButton from './CopyButton'
 const IPConverter = () => {
   const [binaryIP, setBinaryIP] = useState([
     "00000000",
@@ -114,7 +115,7 @@ const IPConverter = () => {
         ))}
       </div>
       <div>
-        <p>Decimal IP: {decimalIP}</p>
+        <p><CopyButton text={decimalIP}/> Decimal IP: {decimalIP}</p>
         <p>BinaryIP IP: {binaryIP.join('.')}</p>
         <CalculateNetworkInfo ip={inputIP.trim()} subnetBits={subnetBits} />
       </div>
