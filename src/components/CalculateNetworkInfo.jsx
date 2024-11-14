@@ -6,10 +6,10 @@ const CalculateNetworkInfo = ({ ip, subnetBits }) => {
 
   return (
     <div>
-      <div>Network Address: {networkAddress}</div>
+      <div>Network ID: {networkAddress}</div>
       <div>Broadcast Address: {broadcastAddress}</div>
       <div>Subnet Mask: {subnetMask}</div>
-      <div>Count: {count}</div>
+      <div>Devices Count: {count}</div>
     </div>
   );
 };
