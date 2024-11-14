@@ -68,21 +68,24 @@ const IPConverter = () => {
         <p>
           <input
             type='text'
+            className="input"
             value={inputIP}
-            style={{ color: isValidIP ? "black" : "red" }}
+            style={{ color: isValidIP ? "" : "red" }}
             onChange={handleInputChange}
           />
           /
           <input
             type='number'
+            className="input"
             value={subnetBits}
             max={32}
+            min={0}
             style={{ width: "50px" }}
             onChange={(e) => setSubnetBits(e.target.value)}
           />
         </p>
         {binaryIP.map((binaryPart, partIndex) => (
-          <div key={partIndex}>
+          <div key={partIndex} className="flex">
             {binaryPart.split("").map((bit, bitIndex) => (
               <button
                 key={bitIndex}
