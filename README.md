@@ -1,8 +1,27 @@
-# React + Vite
+# IP Calc
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+[![ManHours](https://manhours.aiursoft.cn/r/gitlab.aiursoft.cn/anduin/ipcalc.svg)](https://gitlab.aiursoft.cn/anduin/ipcalc/-/commits/master?ref_type=heads)
 
-Currently, two official plugins are available:
+## Run in Docker
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+First, install Docker [here](https://docs.docker.com/get-docker/).
+
+Then run the following commands in a Linux shell:
+
+```bash
+image=hub.aiursoft.cn/anduin/ipcalc
+appName=homepage
+sudo docker pull $image
+sudo docker run -d --name $appName --restart unless-stopped -p 5000:5000 $image
+```
+
+That will start a web server at `http://localhost:5000` and you can test the app.
+
+The docker image has the following context:
+
+| Properties  | Value                                  |
+|-------------|----------------------------------------|
+| Image       | hub.aiursoft.cn/anduin/ipcalc          |
+| Ports       | 5000                                   |
+| Binary path | /app                                   |
+| Data path   | /data                                  |
