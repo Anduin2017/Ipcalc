@@ -2,6 +2,8 @@
 
 [![ManHours](https://manhours.aiursoft.cn/r/gitlab.aiursoft.cn/anduin/ipcalc.svg)](https://gitlab.aiursoft.cn/anduin/ipcalc/-/commits/master?ref_type=heads)
 
+![screenshot of ip calculator](./screenshot.png)
+
 ## Run in Docker
 
 First, install Docker [here](https://docs.docker.com/get-docker/).
