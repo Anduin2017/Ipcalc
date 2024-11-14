@@ -1,5 +1,5 @@
 const CalculateNetworkInfo = ({ ip, subnetBits }) => {
-  const { networkAddress, broadcastAddress, count } = calculateMask({
+  const { networkAddress, broadcastAddress, count, subnetMask } = calculateMask({
     ip,
     subnetBits,
   });
@@ -8,6 +8,7 @@ const CalculateNetworkInfo = ({ ip, subnetBits }) => {
     <div>
       <div>Network Address: {networkAddress}</div>
       <div>Broadcast Address: {broadcastAddress}</div>
+      <div>Subnet Mask: {subnetMask}</div>
       <div>Count: {count}</div>
     </div>
   );
@@ -44,12 +45,18 @@ const calculateMask = ({ ip, subnetBits }) => {
   const broadcastAddress = broadcastAddressBinary
     .map((part) => parseInt(part, 2))
     .join(".");
-  const availableIPRange = `${networkAddress} - ${broadcastAddress}`;
+
+  const subnetMaskParts = [];
+  for (let i = 0; i < 4; i++) {
+    const binaryPart = subnetMaskBinary.substring(i * 8, (i + 1) * 8);
+    subnetMaskParts.push(parseInt(binaryPart, 2));
+  }
+  const subnetMask = subnetMaskParts.join(".");
 
   return {
     networkAddress,
     broadcastAddress,
-    availableIPRange,
+    subnetMask,
     count: Math.pow(2, 32 - subnetBits) - 2,
   };
 };

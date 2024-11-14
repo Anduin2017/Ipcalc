@@ -10,7 +10,7 @@ const IPConverter = () => {
   const [decimalIP, setDecimalIP] = useState("0.0.0.0");
   const [inputIP, setInputIP] = useState("0.0.0.0");
   const [subnetBits, setSubnetBits] = useState("24");
-  const [isValidIP, setIsValidIP] = useState(true); // 添加 isValidIP 状态
+  const [isValidIP, setIsValidIP] = useState(true);
 
   const handleBitClick = (partIndex, bitIndex) => {
     const binaryArray = [...binaryIP];
@@ -31,11 +31,11 @@ const IPConverter = () => {
       const binaryIP = convertToBinary(input);
       setBinaryIP(binaryIP);
       setDecimalIP(convertToDecimal(binaryIP));
-      setIsValidIP(true); // 输入合法，设置 isValidIP 为 true
+      setIsValidIP(true);
     } else {
       setBinaryIP(["00000000", "00000000", "00000000", "00000000"]);
       setDecimalIP("0.0.0.0");
-      setIsValidIP(false); // 输入不合法，设置 isValidIP 为 false
+      setIsValidIP(false);
     }
   };
 
@@ -81,7 +81,6 @@ const IPConverter = () => {
             onChange={(e) => setSubnetBits(e.target.value)}
           />
         </p>
-        {/* {!isValidIP && <p style={{ color: "red" }}>输入的 IP 地址不合法</p>} */}
         {binaryIP.map((binaryPart, partIndex) => (
           <div key={partIndex}>
             {binaryPart.split("").map((bit, bitIndex) => (
@@ -104,7 +103,6 @@ const IPConverter = () => {
       <div>
         <p>Decimal IP: {decimalIP}</p>
         <p>BinaryIP IP: {binaryIP}</p>
-        
         <CalculateNetworkInfo ip={inputIP.trim()} subnetBits={subnetBits} />
       </div>
     </div>
