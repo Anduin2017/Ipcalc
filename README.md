@@ -10,7 +10,7 @@ Then run the following commands in a Linux shell:
 
 ```bash
 image=hub.aiursoft.cn/anduin/ipcalc
-appName=homepage
+appName=ipcalc
 sudo docker pull $image
 sudo docker run -d --name $appName --restart unless-stopped -p 5000:5000 $image
 ```
