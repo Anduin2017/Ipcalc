@@ -1,5 +1,6 @@
 import { useState } from "react";
 import CalculateNetworkInfo from "./CalculateNetworkInfo";
+import CopyButton from './CopyButton'
 const IPConverter = () => {
   const [binaryIP, setBinaryIP] = useState([
     "00000000",
@@ -25,18 +26,13 @@ const IPConverter = () => {
   };
 
   const handleInputChange = (event) => {
-    const input = event.target.value;
+    const input = event.target.value.replace(/[^\d.]/g, '');;
     setInputIP(input);
-    if (validateIP(input)) {
-      const binaryIP = convertToBinary(input);
-      setBinaryIP(binaryIP);
-      setDecimalIP(convertToDecimal(binaryIP));
-      setIsValidIP(true);
-    } else {
-      setBinaryIP(["00000000", "00000000", "00000000", "00000000"]);
-      setDecimalIP("0.0.0.0");
-      setIsValidIP(false);
-    }
+    setIsValidIP(validateIP(input));
+    const validatedIP = validateIPAddress(input);
+    const binaryIP = convertToBinary(validatedIP);
+    setBinaryIP(binaryIP);
+    setDecimalIP(convertToDecimal(binaryIP));
   };
 
   const convertToDecimal = (binaryIP) => {
@@ -47,6 +43,7 @@ const IPConverter = () => {
   const convertToBinary = (decimalIP) => {
     const decimalArray = decimalIP.split(".");
     const binaryArray = decimalArray.map((decimalPart) => {
+      decimalPart = Math.min(decimalPart, 255)
       let binaryPart = parseInt(decimalPart).toString(2);
       while (binaryPart.length < 8) {
         binaryPart = "0" + binaryPart;
@@ -61,7 +58,21 @@ const IPConverter = () => {
       /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
     return pattern.test(ip);
   };
-
+  const validateIPAddress = (ip) => {
+    const ipRegex = /^([0-9]{1,3}\.){3}[0-9]{1,3}$/;
+    if (ipRegex.test(ip)) {
+      return ip;
+    }
+  
+    const ipParts = ip.split('.').filter(part => part !== '');
+    while (ipParts.length < 4) {
+      ipParts.push('0');
+    }
+    ipParts.length = 4;
+    return ipParts.join('.');
+  };
+  
+  
   return (
     <div>
       <div>
@@ -104,8 +115,8 @@ const IPConverter = () => {
         ))}
       </div>
       <div>
-        <p>Decimal IP: {decimalIP}</p>
-        <p>BinaryIP IP: {binaryIP}</p>
+        <p><CopyButton text={decimalIP}/> Decimal IP: {decimalIP}</p>
+        <p>BinaryIP IP: {binaryIP.join('.')}</p>
         <CalculateNetworkInfo ip={inputIP.trim()} subnetBits={subnetBits} />
       </div>
     </div>

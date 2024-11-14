@@ -81,4 +81,5 @@ button:focus-visible {
 
 .flex {
   display: flex;
+  user-select: none;
 }
