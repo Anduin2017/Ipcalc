@@ -1,5 +1,5 @@
 const CalculateNetworkInfo = ({ ip, subnetBits }) => {
-  const { networkAddress, broadcastAddress, count, subnetMask } = calculateMask({
+  const { networkAddress, broadcastAddress, count, subnetMask, ipClass, classDescription } = calculateMask({
     ip,
     subnetBits,
   });
@@ -11,10 +11,11 @@ const CalculateNetworkInfo = ({ ip, subnetBits }) => {
       <div>Broadcast Address: {broadcastAddress}</div>
       <div>Devices Count: {count}</div>
       <div>IP Class: {ipClass}</div>
-      <div>Class Description: {classDescription}></div>
+      <div>Class Description: {classDescription}</div>
     </div>
   );
 };
+
 const calculateMask = ({ ip, subnetBits }) => {
   const ipParts = ip.split(".");
   const ipBinary = ipParts.map((part) =>
