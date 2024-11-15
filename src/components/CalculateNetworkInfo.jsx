@@ -7,9 +7,11 @@ const CalculateNetworkInfo = ({ ip, subnetBits }) => {
   return (
     <div>
       <div>Network ID: {networkAddress}</div>
-      <div>Broadcast Address: {broadcastAddress}</div>
       <div>Subnet Mask: {subnetMask}</div>
+      <div>Broadcast Address: {broadcastAddress}</div>
       <div>Devices Count: {count}</div>
+      <div>IP Class: {ipClass}</div>
+      <div>Class Description: {classDescription}></div>
     </div>
   );
 };
@@ -53,13 +55,38 @@ const calculateMask = ({ ip, subnetBits }) => {
   }
   const subnetMask = subnetMaskParts.join(".");
 
+  // Determine IP Class based on the position of the first "0" in binary representation
+  const firstOctetBinary = ipBinary[0];
+  let ipClass = "";
+  let classDescription = "";
+
+  if (firstOctetBinary.startsWith("0")) {
+    ipClass = "Class A";
+    classDescription = "Class A addresses are for large networks. The first bit of a Class A IP address is always 0.";
+  } else if (firstOctetBinary.startsWith("10")) {
+    ipClass = "Class B";
+    classDescription = "Class B addresses are for medium-sized networks. The first two bits of a Class B IP address are always 10.";
+  } else if (firstOctetBinary.startsWith("110")) {
+    ipClass = "Class C";
+    classDescription = "Class C addresses are for small networks. The first three bits of a Class C IP address are always 110.";
+  } else if (firstOctetBinary.startsWith("1110")) {
+    ipClass = "Class D";
+    classDescription = "Class D addresses are reserved for multicast groups. The first four bits of a Class D IP address are always 1110.";
+  } else if (firstOctetBinary.startsWith("1111")) {
+    ipClass = "Class E";
+    classDescription = "Class E addresses are reserved for future use. The first four bits of a Class E IP address are always 1111.";
+  }
+
   return {
     networkAddress,
     broadcastAddress,
     subnetMask,
     count: Math.pow(2, 32 - subnetBits) - 2,
+    ipClass,
+    classDescription,
   };
 };
+
 
 import PropTypes from "prop-types";
 CalculateNetworkInfo.propTypes = {
