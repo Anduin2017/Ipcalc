@@ -53,20 +53,19 @@ const calculateMask = ({ ip, subnetBits }) => {
   let ipClass = "";
   let classDescription = "";
 
-  const firstOctetBinary = ipBinary;
-  if (firstOctetBinary.startsWith("0")) {
+  if (ipBinary.startsWith("0")) {
     ipClass = "Class A";
     classDescription = "Class A addresses are for large networks.";
-  } else if (firstOctetBinary.startsWith("10")) {
+  } else if (ipBinary.startsWith("10")) {
     ipClass = "Class B";
     classDescription = "Class B addresses are for medium networks.";
-  } else if (firstOctetBinary.startsWith("110")) {
+  } else if (ipBinary.startsWith("110")) {
     ipClass = "Class C";
     classDescription = "Class C addresses are for small networks.";
-  } else if (firstOctetBinary.startsWith("1110")) {
+  } else if (ipBinary.startsWith("1110")) {
     ipClass = "Class D";
     classDescription = "Class D addresses are reserved for multicast.";
-  } else if (firstOctetBinary.startsWith("1111")) {
+  } else if (ipBinary.startsWith("1111")) {
     ipClass = "Class E";
     classDescription = "Class E addresses are reserved.";
   }
