@@ -51,7 +51,7 @@ const calculateMask = ({ ip, subnetBits }) => {
   const subnetMask = subnetMaskParts.join(".");
 
   let ipClass = "";
-  let ipUsage = "Internet Address";
+  let ipUsage = "Public";
   let classDescription = "";
   let localLanReserved = [
     "00001010",
@@ -80,7 +80,7 @@ const calculateMask = ({ ip, subnetBits }) => {
   for (let i = 0; i < localLanReserved.length; i++) {
     let reserved = localLanReserved[i];
     if (ipBinary.startsWith(reserved)) {
-      ipUsage = "Local Area Network (LAN) Address";
+      ipUsage = "Local Area Network (LAN)";
       if (subnetBits < reserved.length) {
         ipUsage = ipUsage + " (Unusable)";
       }
@@ -89,7 +89,7 @@ const calculateMask = ({ ip, subnetBits }) => {
   }
 
   if (ipBinary.startsWith(localhostReserved)) {
-    ipUsage = "Localhost Loopback Address";
+    ipUsage = "Localhost Loopback";
     if (subnetBits < localhostReserved.length) {
       ipUsage = ipUsage + " (Unusable)";
     }
