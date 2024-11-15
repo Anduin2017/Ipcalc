@@ -1,5 +1,13 @@
 const CalculateNetworkInfo = ({ ip, subnetBits }) => {
-  const { networkAddress, broadcastAddress, count, subnetMask, ipClass, classDescription } = calculateMask({
+  const {
+    networkAddress,
+    broadcastAddress,
+    count,
+    subnetMask,
+    ipClass,
+    classDescription,
+    ipUsage,
+  } = calculateMask({
     ip,
     subnetBits,
   });
@@ -11,7 +19,8 @@ const CalculateNetworkInfo = ({ ip, subnetBits }) => {
       <div>Broadcast Address: {broadcastAddress}</div>
       <div>Devices Count: {count}</div>
       <div>IP Class: {ipClass}</div>
-      <div>Class Description: {classDescription}</div>
+      <div>{classDescription}</div>
+      <div>IP Usage: {ipUsage}</div>
     </div>
   );
 };
@@ -20,62 +29,61 @@ const calculateMask = ({ ip, subnetBits }) => {
   const ipParts = ip.split(".");
   const ipBinary = ipParts.map((part) =>
     parseInt(part).toString(2).padStart(8, "0")
-  );
+  ).join(""); // Combine into a single binary string
   const subnetMaskBinary = "1".repeat(subnetBits).padEnd(32, "0");
 
-  const networkAddressBinary = ipBinary.map((part, index) => {
-    const ipPartBinary = part.split("");
-    const subnetMaskPartBinary = subnetMaskBinary
-      .substring(index * 8, (index + 1) * 8)
-      .split("");
-    const networkPartBinary = ipPartBinary.map((bit, bitIndex) =>
-      subnetMaskPartBinary[bitIndex] === "1" ? bit : "0"
-    );
-    return networkPartBinary.join("");
-  });
+  const networkAddressBinary = ipBinary
+    .substring(0, subnetBits)
+    .padEnd(32, "0");
+  const broadcastAddressBinary = ipBinary
+    .substring(0, subnetBits)
+    .padEnd(32, "1");
 
-  const broadcastAddressBinary = networkAddressBinary.map((part, index) => {
-    const networkPartBinary = part.split("");
-    const broadcastPartBinary = networkPartBinary.map((bit, bitIndex) =>
-      subnetMaskBinary[index * 8 + bitIndex] === "1" ? bit : "1"
-    );
-    return broadcastPartBinary.join("");
-  });
-
-  const networkAddress = networkAddressBinary
+  const networkAddress = networkAddressBinary.match(/.{8}/g)
     .map((part) => parseInt(part, 2))
     .join(".");
-  const broadcastAddress = broadcastAddressBinary
+  const broadcastAddress = broadcastAddressBinary.match(/.{8}/g)
     .map((part) => parseInt(part, 2))
     .join(".");
 
-  const subnetMaskParts = [];
-  for (let i = 0; i < 4; i++) {
-    const binaryPart = subnetMaskBinary.substring(i * 8, (i + 1) * 8);
-    subnetMaskParts.push(parseInt(binaryPart, 2));
-  }
+  const subnetMaskParts = subnetMaskBinary.match(/.{8}/g)
+    .map((part) => parseInt(part, 2));
   const subnetMask = subnetMaskParts.join(".");
 
-  // Determine IP Class based on the position of the first "0" in binary representation
-  const firstOctetBinary = ipBinary[0];
   let ipClass = "";
   let classDescription = "";
 
+  const firstOctetBinary = ipBinary;
   if (firstOctetBinary.startsWith("0")) {
     ipClass = "Class A";
     classDescription = "Class A addresses are for large networks.";
   } else if (firstOctetBinary.startsWith("10")) {
     ipClass = "Class B";
-    classDescription = "Class B addresses are for medium-sized networks.";
+    classDescription = "Class B addresses are for medium networks.";
   } else if (firstOctetBinary.startsWith("110")) {
     ipClass = "Class C";
     classDescription = "Class C addresses are for small networks.";
   } else if (firstOctetBinary.startsWith("1110")) {
     ipClass = "Class D";
-    classDescription = "Class D addresses are reserved for multicast groups.";
+    classDescription = "Class D addresses are reserved for multicast.";
   } else if (firstOctetBinary.startsWith("1111")) {
     ipClass = "Class E";
-    classDescription = "Class E addresses are reserved for future use.";
+    classDescription = "Class E addresses are reserved.";
+  }
+
+  // Determine IP Usage
+  let ipUsage = "Internet Address";
+  if (ipBinary.startsWith("00001010") && subnetBits >= 8) {
+    // 10.0.0.0/8 - 10.255.255.255/8
+    ipUsage = "Local LAN";
+  } else if (ipBinary.startsWith("101011000001") && subnetBits >= 12) {
+    // 172.16.0.0/12 - 172.31.255.255/12
+    ipUsage = "local LAN";
+  } else if (ipBinary.startsWith("1100000010101000") && subnetBits >= 16) {
+    // 192.168.0.0/24 - 192.168.0.0/24
+    ipUsage = "Local LAN";
+  } else if (ipBinary === "01111111000000000000000000000001") {
+    ipUsage = "Localhost";
   }
 
   return {
@@ -85,9 +93,9 @@ const calculateMask = ({ ip, subnetBits }) => {
     count: Math.pow(2, 32 - subnetBits) - 2,
     ipClass,
     classDescription,
+    ipUsage,
   };
 };
-
 
 import PropTypes from "prop-types";
 CalculateNetworkInfo.propTypes = {
