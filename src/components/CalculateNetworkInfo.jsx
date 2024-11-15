@@ -53,54 +53,46 @@ const calculateMask = ({ ip, subnetBits }) => {
   let ipClass = "";
   let ipUsage = "Internet Address";
   let classDescription = "";
+  let localLanReserved = [
+    "00001010",
+    "101011000001",
+    "1100000010101000"
+  ]
+  let localhostReserved = "01111111";
 
   if (ipBinary.startsWith("0")) {
     ipClass = "Class A";
     classDescription = "Class A addresses are for large networks.";
-
-    if (ipBinary.startsWith("00001010")) {
-      // 10.0.0.0/8
-      ipUsage = "Local LAN";
-      if (subnetBits < 8) {
-        ipUsage = ipUsage + " (Unusable)";
-    }
-    if (ipBinary.startsWith("01111111")) {
-      // 127.0.0.0/8
-      ipUsage = "Localhost";
-      if (subnetBits < 8) {
-        ipUsage = ipUsage + " (Unusable)";
-      }
-    }
-
   } else if (ipBinary.startsWith("10")) {
     ipClass = "Class B";
     classDescription = "Class B addresses are for medium networks.";
-
-    if (ipBinary.startsWith("101011000001")) {
-      // 172.16.0.0/12
-      ipUsage = "local LAN";
-      if (subnetBits < 12) {
-        ipUsage = ipUsage + " (Unusable)";
-      }
-    }
-
   } else if (ipBinary.startsWith("110")) {
     ipClass = "Class C";
     classDescription = "Class C addresses are for small networks.";
-
-    if (ipBinary.startsWith("1100000010101000")) {
-      // 192.168.0.0/16
-      ipUsage = "Local LAN";
-      if (subnetBits < 16) {
-        ipUsage = ipUsage + " (Unusable)";
-    }
-
   } else if (ipBinary.startsWith("1110")) {
     ipClass = "Class D";
     classDescription = "Class D addresses are reserved for multicast.";
   } else if (ipBinary.startsWith("1111")) {
     ipClass = "Class E";
     classDescription = "Class E addresses are reserved.";
+  }
+
+  for (let i = 0; i < localLanReserved.length; i++) {
+    let reserved = localLanReserved[i];
+    if (ipBinary.startsWith(reserved)) {
+      ipUsage = "Local Area Network (LAN) Address";
+      if (subnetBits < reserved.length) {
+        ipUsage = ipUsage + " (Unusable)";
+      }
+      break;
+    }
+  }
+
+  if (ipBinary.startsWith(localhostReserved)) {
+    ipUsage = "Localhost Loopback Address";
+    if (subnetBits < localhostReserved.length) {
+      ipUsage = ipUsage + " (Unusable)";
+    }
   }
 
   return {
