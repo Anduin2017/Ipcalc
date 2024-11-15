@@ -58,31 +58,41 @@ const calculateMask = ({ ip, subnetBits }) => {
     ipClass = "Class A";
     classDescription = "Class A addresses are for large networks.";
 
-    if (ipBinary.startsWith("00001010") && subnetBits >= 8) {
-      // 10.0.0.0/8 - 10.255.255.255/8
+    if (ipBinary.startsWith("00001010")) {
+      // 10.0.0.0/8
       ipUsage = "Local LAN";
+      if (subnetBits < 8) {
+        ipUsage = ipUsage + " (Unusable)";
     }
-    if (ipBinary.startsWith("01111111") && subnetBits >= 16) {
-      // 127.0.0.0/16
+    if (ipBinary.startsWith("01111111")) {
+      // 127.0.0.0/8
       ipUsage = "Localhost";
+      if (subnetBits < 8) {
+        ipUsage = ipUsage + " (Unusable)";
+      }
     }
 
   } else if (ipBinary.startsWith("10")) {
     ipClass = "Class B";
     classDescription = "Class B addresses are for medium networks.";
 
-    if (ipBinary.startsWith("101011000001") && subnetBits >= 12) {
-      // 172.16.0.0/12 - 172.31.255.255/12
+    if (ipBinary.startsWith("101011000001")) {
+      // 172.16.0.0/12
       ipUsage = "local LAN";
+      if (subnetBits < 12) {
+        ipUsage = ipUsage + " (Unusable)";
+      }
     }
 
   } else if (ipBinary.startsWith("110")) {
     ipClass = "Class C";
     classDescription = "Class C addresses are for small networks.";
 
-    if (ipBinary.startsWith("1100000010101000") && subnetBits >= 16) {
-      // 192.168.0.0/24 - 192.168.0.0/24
+    if (ipBinary.startsWith("1100000010101000")) {
+      // 192.168.0.0/16
       ipUsage = "Local LAN";
+      if (subnetBits < 16) {
+        ipUsage = ipUsage + " (Unusable)";
     }
 
   } else if (ipBinary.startsWith("1110")) {
