@@ -51,38 +51,46 @@ const calculateMask = ({ ip, subnetBits }) => {
   const subnetMask = subnetMaskParts.join(".");
 
   let ipClass = "";
+  let ipUsage = "Internet Address";
   let classDescription = "";
 
   if (ipBinary.startsWith("0")) {
     ipClass = "Class A";
     classDescription = "Class A addresses are for large networks.";
+
+    if (ipBinary.startsWith("00001010") && subnetBits >= 8) {
+      // 10.0.0.0/8 - 10.255.255.255/8
+      ipUsage = "Local LAN";
+    }
+    if (ipBinary.startsWith("01111111") && subnetBits >= 16) {
+      // 127.0.0.0/16
+      ipUsage = "Localhost";
+    }
+
   } else if (ipBinary.startsWith("10")) {
     ipClass = "Class B";
     classDescription = "Class B addresses are for medium networks.";
+
+    if (ipBinary.startsWith("101011000001") && subnetBits >= 12) {
+      // 172.16.0.0/12 - 172.31.255.255/12
+      ipUsage = "local LAN";
+    }
+
   } else if (ipBinary.startsWith("110")) {
     ipClass = "Class C";
     classDescription = "Class C addresses are for small networks.";
+
+    if (ipBinary.startsWith("1100000010101000") && subnetBits >= 16) {
+      // 192.168.0.0/24 - 192.168.0.0/24
+      ipUsage = "Local LAN";
+    }
+
   } else if (ipBinary.startsWith("1110")) {
     ipClass = "Class D";
     classDescription = "Class D addresses are reserved for multicast.";
   } else if (ipBinary.startsWith("1111")) {
     ipClass = "Class E";
     classDescription = "Class E addresses are reserved.";
-  }
-
-  // Determine IP Usage
-  let ipUsage = "Internet Address";
-  if (ipBinary.startsWith("00001010") && subnetBits >= 8) {
-    // 10.0.0.0/8 - 10.255.255.255/8
-    ipUsage = "Local LAN";
-  } else if (ipBinary.startsWith("101011000001") && subnetBits >= 12) {
-    // 172.16.0.0/12 - 172.31.255.255/12
-    ipUsage = "local LAN";
-  } else if (ipBinary.startsWith("1100000010101000") && subnetBits >= 16) {
-    // 192.168.0.0/24 - 192.168.0.0/24
-    ipUsage = "Local LAN";
-  } else if (ipBinary === "01111111000000000000000000000001") {
-    ipUsage = "Localhost";
   }
 
   return {
