@@ -115,7 +115,7 @@ const IPConverter = () => {
         ))}
       </div>
       <div>
-        <p><CopyButton text={decimalIP}/> Decimal IP: {decimalIP}</p>
+        <p><CopyButton text={decimalIP}/>IP: {decimalIP}</p>
         <p>BinaryIP IP: {binaryIP.join('.')}</p>
         <CalculateNetworkInfo ip={inputIP.trim()} subnetBits={subnetBits} />
       </div>
