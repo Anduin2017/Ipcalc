@@ -63,19 +63,19 @@ const calculateMask = ({ ip, subnetBits }) => {
 
   if (firstOctetBinary.startsWith("0")) {
     ipClass = "Class A";
-    classDescription = "Class A addresses are for large networks. The first bit of a Class A IP address is always 0.";
+    classDescription = "Class A addresses are for large networks.";
   } else if (firstOctetBinary.startsWith("10")) {
     ipClass = "Class B";
-    classDescription = "Class B addresses are for medium-sized networks. The first two bits of a Class B IP address are always 10.";
+    classDescription = "Class B addresses are for medium-sized networks.";
   } else if (firstOctetBinary.startsWith("110")) {
     ipClass = "Class C";
-    classDescription = "Class C addresses are for small networks. The first three bits of a Class C IP address are always 110.";
+    classDescription = "Class C addresses are for small networks.";
   } else if (firstOctetBinary.startsWith("1110")) {
     ipClass = "Class D";
-    classDescription = "Class D addresses are reserved for multicast groups. The first four bits of a Class D IP address are always 1110.";
+    classDescription = "Class D addresses are reserved for multicast groups.";
   } else if (firstOctetBinary.startsWith("1111")) {
     ipClass = "Class E";
-    classDescription = "Class E addresses are reserved for future use. The first four bits of a Class E IP address are always 1111.";
+    classDescription = "Class E addresses are reserved for future use.";
   }
 
   return {
