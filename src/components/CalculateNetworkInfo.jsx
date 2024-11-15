@@ -5,7 +5,6 @@ const CalculateNetworkInfo = ({ ip, subnetBits }) => {
     count,
     subnetMask,
     ipClass,
-    classDescription,
     ipUsage,
   } = calculateMask({
     ip,
@@ -19,7 +18,6 @@ const CalculateNetworkInfo = ({ ip, subnetBits }) => {
       <div>Broadcast Address: {broadcastAddress}</div>
       <div>Devices Count: {count}</div>
       <div>IP Class: {ipClass}</div>
-      <div>{classDescription}</div>
       <div>IP Usage: {ipUsage}</div>
     </div>
   );
@@ -52,7 +50,6 @@ const calculateMask = ({ ip, subnetBits }) => {
 
   let ipClass = "";
   let ipUsage = "Public";
-  let classDescription = "";
   let localLanReserved = [
     "00001010",
     "101011000001",
@@ -62,19 +59,19 @@ const calculateMask = ({ ip, subnetBits }) => {
 
   if (ipBinary.startsWith("0")) {
     ipClass = "Class A";
-    classDescription = "Class A addresses are for large networks.";
+    ipUsage = ipUsage + " (Large Network)";
   } else if (ipBinary.startsWith("10")) {
     ipClass = "Class B";
-    classDescription = "Class B addresses are for medium networks.";
+    ipUsage = ipUsage + " (Medium Network)";
   } else if (ipBinary.startsWith("110")) {
     ipClass = "Class C";
-    classDescription = "Class C addresses are for small networks.";
+    ipUsage = ipUsage + " (Small Network)";
   } else if (ipBinary.startsWith("1110")) {
     ipClass = "Class D";
-    classDescription = "Class D addresses are reserved for multicast.";
+    ipUsage = "Reserved for Multicast";
   } else if (ipBinary.startsWith("1111")) {
     ipClass = "Class E";
-    classDescription = "Class E addresses are reserved.";
+    ipUsage = "Reserved";
   }
 
   for (let i = 0; i < localLanReserved.length; i++) {
@@ -101,7 +98,6 @@ const calculateMask = ({ ip, subnetBits }) => {
     subnetMask,
     count: Math.pow(2, 32 - subnetBits) - 2,
     ipClass,
-    classDescription,
     ipUsage,
   };
 };
