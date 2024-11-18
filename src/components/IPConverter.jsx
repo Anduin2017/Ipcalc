@@ -1,17 +1,15 @@
 import { useState } from "react";
 import CalculateNetworkInfo from "./CalculateNetworkInfo";
-import CopyButton from './CopyButton';
+import CopyButton from "./CopyButton";
+import { IPTypes } from "./IPTypes";
 
-const IPConverter = () => {
-  const [binaryIP, setBinaryIP] = useState([
-    "00000000",
-    "00000000",
-    "00000000",
-    "00000000",
-  ]);
+const IPConverter = ({type = "IPV4"}) => {
+  const { defaultIP, binaryPartLength, radix, delimiter,width, _subnetBits,pattern } = IPTypes[type]
+
+  const [binaryIP, setBinaryIP] = useState(defaultIP);
   const [decimalIP, setDecimalIP] = useState("0.0.0.0");
-  const [inputIP, setInputIP] = useState("0.0.0.0");
-  const [subnetBits, setSubnetBits] = useState("24");
+  const [inputIP, setInputIP] = useState("");
+  const [subnetBits, setSubnetBits] = useState(_subnetBits.toString());
   const [isValidIP, setIsValidIP] = useState(true);
 
   const handleBitClick = (partIndex, bitIndex) => {
@@ -27,7 +25,7 @@ const IPConverter = () => {
   };
 
   const handleInputChange = (event) => {
-    const input = event.target.value.replace(/[^\d.]/g, '');
+    const input = event.target.value.replace(/[^a-fA-F\d.:]/g, "");
     setInputIP(input);
     setIsValidIP(validateIP(input));
     const validatedIP = validateIPAddress(input);
@@ -36,17 +34,21 @@ const IPConverter = () => {
     setDecimalIP(convertToDecimal(binaryIP));
   };
 
+  const handleInputSubnetBits = (event) => {
+    const input = event.target.value.replace(/[^\d]/g, "");
+    setSubnetBits(input)
+  }
+
   const convertToDecimal = (binaryIP) => {
-    const decimalArray = binaryIP.map((binaryPart) => parseInt(binaryPart, 2));
-    return decimalArray.join(".");
+    const decimalArray = binaryIP.map((binaryPart) => parseInt(binaryPart, 2).toString(radix));
+    return decimalArray.join(delimiter);
   };
 
   const convertToBinary = (decimalIP) => {
-    const decimalArray = decimalIP.split(".");
+    const decimalArray = decimalIP.split(delimiter);
     const binaryArray = decimalArray.map((decimalPart) => {
-      decimalPart = Math.min(decimalPart, 255);
-      let binaryPart = parseInt(decimalPart).toString(2);
-      while (binaryPart.length < 8) {
+      let binaryPart = Math.min(parseInt(decimalPart, radix), Math.pow(2,binaryPartLength)-1).toString(2);
+      while (binaryPart.length < binaryPartLength) {
         binaryPart = "0" + binaryPart;
       }
       return binaryPart;
@@ -55,25 +57,24 @@ const IPConverter = () => {
   };
 
   const validateIP = (ip) => {
-    const pattern =
-      /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-    return pattern.test(ip);
+    return pattern.test(ip) ;
   };
-
   const validateIPAddress = (ip) => {
-    const ipRegex = /^([0-9]{1,3}\.){3}[0-9]{1,3}$/;
+    const ipRegex =
+      10 === radix
+      ? /^([0-9]{1,3}\.){3}[0-9]{1,3}$/:
+       /^([0-9a-f]{1,4}\.){7}[0-9a-f]{1,4}$/
     if (ipRegex.test(ip)) {
       return ip;
     }
 
-    const ipParts = ip.split('.').filter(part => part !== '');
-    while (ipParts.length < 4) {
-      ipParts.push('0');
+    const ipParts = ip.split(delimiter).filter((part) => part !== "");
+    while (ipParts.length < width) {
+      ipParts.push("0");
     }
-    ipParts.length = 4;
-    return ipParts.join('.');
+    ipParts.length = width;
+    return ipParts.join(delimiter);
   };
-
 
   return (
     <div>
@@ -81,7 +82,7 @@ const IPConverter = () => {
         <p>
           <input
             type='text'
-            className="input"
+            className='input'
             value={inputIP}
             style={{ color: isValidIP ? "" : "red" }}
             onChange={handleInputChange}
@@ -89,21 +90,20 @@ const IPConverter = () => {
           /
           <input
             type='number'
-            className="input"
+            className='input'
             value={subnetBits}
-            max={32}
             min={0}
             style={{ width: "50px" }}
-            onChange={(e) => setSubnetBits(e.target.value)}
+            onChange={(e) => handleInputSubnetBits(e)}
           />
         </p>
         {binaryIP.map((binaryPart, partIndex) => (
-          <div key={partIndex} className="flex">
+          <div key={partIndex} className='flex'>
             {binaryPart.split("").map((bit, bitIndex) => (
               <button
                 key={bitIndex}
                 className={
-                  isMask(partIndex, bitIndex, subnetBits) ? "mask" : "subnet"
+                  isMask(partIndex, bitIndex, subnetBits,binaryPartLength) ? "mask" : "subnet"
                 }
                 style={{
                   backgroundColor: bit === "0" ? "gray" : "orange",
@@ -117,16 +117,23 @@ const IPConverter = () => {
         ))}
       </div>
       <div>
-        <p><CopyButton text={decimalIP}/>IP: {decimalIP}</p>
-        <p>Binary IP: {binaryIP.join('')}</p>
-        <CalculateNetworkInfo ip={inputIP.trim()} subnetBits={subnetBits} />
+        <p>
+          <CopyButton text={decimalIP} /> IP: {decimalIP}
+        </p>
+        <p>BinaryIP IP: {binaryIP.join(delimiter)}</p>
+        <CalculateNetworkInfo ip={inputIP.trim()} subnetBits={subnetBits} type={type} />
       </div>
     </div>
   );
 };
 
-const isMask = (partIndex, bitIndex, subnetBits) => {
-  if (partIndex * 8 + bitIndex < parseInt(subnetBits)) return true;
+const isMask = (partIndex, bitIndex, subnetBits,binaryPartLength) => {
+  if (partIndex * binaryPartLength + bitIndex < parseInt(subnetBits)) return true;
   return false;
+};
+
+import PropTypes from "prop-types";
+IPConverter.propTypes = {
+  type: PropTypes.string.isRequired,
 };
 export default IPConverter;
