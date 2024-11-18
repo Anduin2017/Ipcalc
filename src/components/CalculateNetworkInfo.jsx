@@ -1,4 +1,6 @@
-const CalculateNetworkInfo = ({ ip, subnetBits }) => {
+import { IPTypes } from "./IPTypes";
+
+const CalculateNetworkInfo = ({ ip, subnetBits, type }) => {
   const {
     networkAddress,
     broadcastAddress,
@@ -9,6 +11,7 @@ const CalculateNetworkInfo = ({ ip, subnetBits }) => {
   } = calculateMask({
     ip,
     subnetBits,
+    type
   });
 
   return (
@@ -23,30 +26,33 @@ const CalculateNetworkInfo = ({ ip, subnetBits }) => {
   );
 };
 
-const calculateMask = ({ ip, subnetBits }) => {
-  const ipParts = ip.split(".");
+const calculateMask = ({ ip, subnetBits,type }) => {
+  const { binaryPartLength, radix,width, delimiter } = IPTypes[type];
+
+  const ipParts = ip.split(delimiter);
   const ipBinary = ipParts.map((part) =>
-    parseInt(part).toString(2).padStart(8, "0")
+    parseInt(part,radix).toString(2).padStart(binaryPartLength, "0")
   ).join(""); // Combine into a single binary string
-  const subnetMaskBinary = "1".repeat(subnetBits).padEnd(32, "0");
+  const subnetMaskBinary = "1".repeat(subnetBits).padEnd(width * binaryPartLength, "0");
 
   const networkAddressBinary = ipBinary
     .substring(0, subnetBits)
-    .padEnd(32, "0");
+    .padEnd(width * binaryPartLength, "0");
   const broadcastAddressBinary = ipBinary
     .substring(0, subnetBits)
-    .padEnd(32, "1");
+    .padEnd(width * binaryPartLength, "1");
 
-  const networkAddress = networkAddressBinary.match(/.{8}/g)
-    .map((part) => parseInt(part, 2))
-    .join(".");
-  const broadcastAddress = broadcastAddressBinary.match(/.{8}/g)
-    .map((part) => parseInt(part, 2))
-    .join(".");
+  const reg =  new RegExp(`.{${binaryPartLength}}`,'g');
+  const networkAddress = networkAddressBinary.match(reg)
+    .map((part) => parseInt(part, 2).toString(16))
+    .join(delimiter);
+  const broadcastAddress = broadcastAddressBinary.match(reg)
+    .map((part) => parseInt(part, 2).toString(16))
+    .join(delimiter);
 
-  const subnetMaskParts = subnetMaskBinary.match(/.{8}/g)
-    .map((part) => parseInt(part, 2));
-  const subnetMask = subnetMaskParts.join(".");
+  const subnetMaskParts = subnetMaskBinary.match(reg)
+    .map((part) => parseInt(part, 2).toString(16));
+  const subnetMask = subnetMaskParts.join(delimiter);
 
   let ipClass = "";
   let ipUsage = "Public";
@@ -96,7 +102,7 @@ const calculateMask = ({ ip, subnetBits }) => {
     networkAddress,
     broadcastAddress,
     subnetMask,
-    count: Math.pow(2, 32 - subnetBits) - 2,
+    count: Math.pow(2, width * binaryPartLength - subnetBits) - 2,
     ipClass,
     ipUsage,
   };
@@ -106,5 +112,6 @@ import PropTypes from "prop-types";
 CalculateNetworkInfo.propTypes = {
   ip: PropTypes.string.isRequired,
   subnetBits: PropTypes.string.isRequired,
+  type: PropTypes.string.isRequired,
 };
 export default CalculateNetworkInfo;
