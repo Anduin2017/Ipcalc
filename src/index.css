@@ -18,6 +18,7 @@ a {
   color: #646cff;
   text-decoration: inherit;
 }
+
 a:hover {
   color: #535bf2;
 }
@@ -51,6 +52,7 @@ button {
 button:hover {
   border-color: #646cff;
 }
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
@@ -61,9 +63,11 @@ button:focus-visible {
     color: #213547;
     background-color: #ffffff;
   }
+
   a:hover {
     color: #747bff;
   }
+
   button {
     background-color: #f9f9f9;
   }
@@ -74,6 +78,7 @@ button:focus-visible {
   font-weight: bold;
   flex-grow: 1;
 }
+
 .subnet {
   font-weight: bold;
   flex-grow: 1;
@@ -82,4 +87,34 @@ button:focus-visible {
 .flex {
   display: flex;
   user-select: none;
+}
+
+.buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  /* grid-gap: 10px; */
+}
+
+.buttons-grid.IPV6 {
+  grid-template-columns: repeat(16, 1fr);
+}
+
+@media (max-width: 400px) {
+  .buttons-grid.IPV6 {
+    grid-template-columns: repeat(8, 1fr);
+  }
+
+  .buttons-grid.IPV6 {
+
+    :nth-child(16n+9),
+    :nth-child(16n+10),
+    :nth-child(16n+11),
+    :nth-child(16n+12),
+    :nth-child(16n+13),
+    :nth-child(16n+14),
+    :nth-child(16n+15),
+    :nth-child(16n+16) {
+      margin-bottom: 16px;
+    }
+  }
 }

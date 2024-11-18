@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, Fragment  } from "react";
 import CalculateNetworkInfo from "./CalculateNetworkInfo";
 import CopyButton from "./CopyButton";
 import { IPTypes } from "./IPTypes";
@@ -97,24 +97,26 @@ const IPConverter = ({type = "IPV4"}) => {
             onChange={(e) => handleInputSubnetBits(e)}
           />
         </p>
-        {binaryIP.map((binaryPart, partIndex) => (
-          <div key={partIndex} className='flex'>
-            {binaryPart.split("").map((bit, bitIndex) => (
-              <button
-                key={bitIndex}
-                className={
-                  isMask(partIndex, bitIndex, subnetBits,binaryPartLength) ? "mask" : "subnet"
-                }
-                style={{
-                  backgroundColor: bit === "0" ? "gray" : "orange",
-                }}
-                onClick={() => handleBitClick(partIndex, bitIndex)}
-              >
-                {bit}
-              </button>
-            ))}
-          </div>
-        ))}
+        <div className={`buttons-grid ${type}`}>
+          {binaryIP.map((binaryPart, partIndex) => (
+            <Fragment key={partIndex}>
+              {binaryPart.split("").map((bit, bitIndex) => (
+                <button
+                  key={bitIndex}
+                  className={
+                    `bit-button ${isMask(partIndex, bitIndex, subnetBits,binaryPartLength)? "mask" : "subnet"} `
+                  }
+                  style={{
+                    backgroundColor: bit === "0" ? "gray" : "orange",
+                  }}
+                  onClick={() => handleBitClick(partIndex, bitIndex)}
+                >
+                  {bit}
+                </button>
+              ))}
+            </Fragment>
+          ))}
+        </div>
       </div>
       <div>
         <p>
