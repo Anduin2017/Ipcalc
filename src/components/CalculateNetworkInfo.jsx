@@ -44,14 +44,14 @@ const calculateMask = ({ ip, subnetBits,type }) => {
 
   const reg =  new RegExp(`.{${binaryPartLength}}`,'g');
   const networkAddress = networkAddressBinary.match(reg)
-    .map((part) => parseInt(part, 2).toString(16))
+    .map((part) => parseInt(part, 2).toString(radix))
     .join(delimiter);
   const broadcastAddress = broadcastAddressBinary.match(reg)
-    .map((part) => parseInt(part, 2).toString(16))
+    .map((part) => parseInt(part, 2).toString(radix))
     .join(delimiter);
 
   const subnetMaskParts = subnetMaskBinary.match(reg)
-    .map((part) => parseInt(part, 2).toString(16));
+    .map((part) => parseInt(part, 2).toString(radix));
   const subnetMask = subnetMaskParts.join(delimiter);
 
   let ipClass = "";

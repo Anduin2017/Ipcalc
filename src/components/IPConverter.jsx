@@ -122,7 +122,7 @@ const IPConverter = ({type = "IPV4"}) => {
         <p>
           <CopyButton text={decimalIP} /> IP: {decimalIP}
         </p>
-        <p>BinaryIP IP: {binaryIP.join(delimiter)}</p>
+        <p>Binary IP: {binaryIP.join("")}</p>
         <CalculateNetworkInfo ip={inputIP.trim()} subnetBits={subnetBits} type={type} />
       </div>
     </div>
