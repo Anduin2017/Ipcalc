@@ -60,14 +60,18 @@ const IPConverter = ({type = "IPV4"}) => {
     return pattern.test(ip) ;
   };
   const validateIPAddress = (ip) => {
-    const ipRegex =
-      10 === radix
-      ? /^([0-9]{1,3}\.){3}[0-9]{1,3}$/:
-       /^([0-9a-f]{1,4}\.){7}[0-9a-f]{1,4}$/
-    if (ipRegex.test(ip)) {
-      return ip;
+    if (type === 'IPV6' && ip.includes("::")) {
+      const ipParts = ip.split(delimiter);
+      const missingPartsCount = width - ipParts.length + 1;
+      const missingParts = Array(missingPartsCount).fill("0000");
+      const index = ipParts.findIndex((part) => part === "");
+      ipParts.splice(index, 1, ...missingParts);
+      return ipParts.join(delimiter);
     }
 
+    if (validateIP(ip)) {
+      return ip;
+    }
     const ipParts = ip.split(delimiter).filter((part) => part !== "");
     while (ipParts.length < width) {
       ipParts.push("0");
@@ -77,7 +81,7 @@ const IPConverter = ({type = "IPV4"}) => {
   };
 
   return (
-    <div>
+    <>
       <div>
         <p>
           <input
@@ -119,13 +123,17 @@ const IPConverter = ({type = "IPV4"}) => {
         </div>
       </div>
       <div>
-        <p>
-          <CopyButton text={decimalIP} /> IP: {decimalIP}
+        <p className="flex">
+          <span>
+            <CopyButton text={decimalIP} /> IP: {decimalIP}
+          </span>
+          <span>
+            <CopyButton text={binaryIP} /> Binary IP
+          </span>
         </p>
-        <p>Binary IP: {binaryIP.join("")}</p>
         <CalculateNetworkInfo ip={inputIP.trim()} subnetBits={subnetBits} type={type} />
       </div>
-    </div>
+    </>
   );
 };
 
