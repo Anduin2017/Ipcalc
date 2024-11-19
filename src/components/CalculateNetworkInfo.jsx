@@ -6,6 +6,8 @@ const CalculateNetworkInfo = ({ ip, subnetBits, type }) => {
     subnetMask,
     ipClass,
     ipUsage,
+    devicesMayNotWorkProperly,
+    subnetsAvailable,
   } = calculateMask({
     ip,
     subnetBits: parseInt(subnetBits, 10),
@@ -18,13 +20,30 @@ const CalculateNetworkInfo = ({ ip, subnetBits, type }) => {
       {subnetMask && <div>Subnet Mask: {subnetMask}</div>}
       {broadcastAddress && <div>Broadcast Address: {broadcastAddress}</div>}
       {count !== null && count !== undefined && (
-        <div>Devices Count: {formatBigInt(count)}</div>
+        <div>
+          Devices Count: {formatBigInt(count)}
+          {devicesMayNotWorkProperly && (
+            <span> (Subnet mask length exceeds 64 bits; devices may not work properly)</span>
+          )}
+        </div>
       )}
       {ipClass && <div>IP Type: {ipClass}</div>}
       {ipUsage && <div>IP Usage: {ipUsage}</div>}
+      {type === "IPV6" && (
+        <div>
+          {subnetsAvailable > 1n && (
+            <div>Available subnets: {formatBigInt(subnetsAvailable)}</div>
+          )}
+          {subnetsAvailable === 1n && (
+            <div>Cannot further divide into more subnets.</div>
+          )}
+          {subnetsAvailable === 0n && (
+            <div>Cannot further divide into /64 subnets.</div>
+          )}
+        </div>
+      )}
     </div>
   );
-  
 };
 
 const calculateMask = ({ ip, subnetBits, type }) => {
@@ -214,13 +233,28 @@ const calculateIPv6Mask = ({ ip, subnetBits }) => {
   // 计算可用设备数
   const count = BigInt(2) ** BigInt(128 - subnetBits);
 
+    // Determine if devices may not work properly
+    const devicesMayNotWorkProperly = subnetBits > 64;
+  
+    // Calculate number of subnets available
+    let subnetsAvailable = 0;
+    if (subnetBits < 64) {
+      subnetsAvailable = BigInt(2) ** BigInt(64 - subnetBits);
+    } else if (subnetBits === 64) {
+      subnetsAvailable = 1n; // BigInt literal
+    } else {
+      subnetsAvailable = 0n;
+    }
+  
   return {
     networkAddress,
-    broadcastAddress: null, // IPv6 不存在广播地址
+    broadcastAddress: null,
     subnetMask,
     count,
     ipClass,
     ipUsage,
+    devicesMayNotWorkProperly,
+    subnetsAvailable,
   };
 };
 
