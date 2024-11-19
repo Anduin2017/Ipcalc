@@ -1,5 +1,3 @@
-import { IPTypes } from "./IPTypes";
-
 const CalculateNetworkInfo = ({ ip, subnetBits, type }) => {
   const {
     networkAddress,
@@ -10,7 +8,7 @@ const CalculateNetworkInfo = ({ ip, subnetBits, type }) => {
     ipUsage,
   } = calculateMask({
     ip,
-    subnetBits,
+    subnetBits: parseInt(subnetBits, 10),
     type,
   });
 
@@ -20,12 +18,13 @@ const CalculateNetworkInfo = ({ ip, subnetBits, type }) => {
       {subnetMask && <div>Subnet Mask: {subnetMask}</div>}
       {broadcastAddress && <div>Broadcast Address: {broadcastAddress}</div>}
       {count !== null && count !== undefined && (
-        <div>Devices Count: {count}</div>
+        <div>Devices Count: {formatBigInt(count)}</div>
       )}
       {ipClass && <div>IP Type: {ipClass}</div>}
       {ipUsage && <div>IP Usage: {ipUsage}</div>}
     </div>
   );
+  
 };
 
 const calculateMask = ({ ip, subnetBits, type }) => {
@@ -175,10 +174,6 @@ const calculateIPv6Mask = ({ ip, subnetBits }) => {
     )
     .join(""); // Combine into a single binary string
 
-  const subnetMaskBinary = "1"
-    .repeat(subnetBits)
-    .padEnd(width * binaryPartLength, "0");
-
   const networkAddressBinary = ipBinary
     .substring(0, subnetBits)
     .padEnd(width * binaryPartLength, "0");
@@ -195,8 +190,6 @@ const calculateIPv6Mask = ({ ip, subnetBits }) => {
   // Determine IP Type and Usage
   let ipClass = "";
   let ipUsage = "";
-
-  const first16Bits = ipBinary.substring(0, 16);
 
   if (ipBinary === "0".repeat(128)) {
     ipClass = "Unspecified Address";
@@ -218,11 +211,14 @@ const calculateIPv6Mask = ({ ip, subnetBits }) => {
     ipUsage = "Public addressing";
   }
 
+  // 计算可用设备数
+  const count = BigInt(2) ** BigInt(128 - subnetBits);
+
   return {
     networkAddress,
-    broadcastAddress: null, // IPv6 does not have broadcast addresses
+    broadcastAddress: null, // IPv6 不存在广播地址
     subnetMask,
-    count: null, // Devices count is not practical in IPv6
+    count,
     ipClass,
     ipUsage,
   };
@@ -288,7 +284,7 @@ function validateIPv6(address) {
       }
     }
     return true;
-  } catch (e) {
+  } catch {
     return false;
   }
 }
@@ -307,6 +303,10 @@ function validateIPv4(address) {
   }
   return true;
 }
+
+function formatBigInt(bigint) {
+  return bigint.toLocaleString();
+};
 
 import PropTypes from "prop-types";
 CalculateNetworkInfo.propTypes = {
