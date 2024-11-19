@@ -81,7 +81,7 @@ const IPConverter = ({type = "IPV4"}) => {
   };
 
   return (
-    <div>
+    <>
       <div>
         <p>
           <input
@@ -133,7 +133,7 @@ const IPConverter = ({type = "IPV4"}) => {
         </p>
         <CalculateNetworkInfo ip={inputIP.trim()} subnetBits={subnetBits} type={type} />
       </div>
-    </div>
+    </>
   );
 };
 

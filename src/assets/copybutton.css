@@ -16,7 +16,7 @@
   position: fixed;
   bottom: 4rem;
   right: 2rem;
-  transform: translateX(-50%);
+  /* transform: translateX(-50%); */
   background-color: rgb(24,164,249);
   color: #fff;
   padding: 5px 10px;

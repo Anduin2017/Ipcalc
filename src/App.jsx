@@ -1,12 +1,22 @@
 import "./App.css";
 import IPConverter from "./components/IPConverter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 function App() {
-  const [selectedOption, setSelectedOption] = useState("IPV4");
+  const [IPType, setIPType] = useState("IPV4");
 
-  const handleOptionChange = (event) => {
-    setSelectedOption(event.target.value);
+  const handleIPTypeChange = (event) => {
+    const value = event.target.value;
+    setIPType(value);
+    localStorage.setItem("IPType", value);
   };
+
+  useEffect(() => {
+    const storedIPType = localStorage.getItem("IPType");
+    if (storedIPType) {
+      setIPType(storedIPType);
+    }
+  }, []);
+
   return (
     <>
       <div>
@@ -14,8 +24,8 @@ function App() {
           <input
             type='radio'
             value='IPV4'
-            checked={selectedOption === "IPV4"}
-            onChange={handleOptionChange}
+            checked={IPType === "IPV4"}
+            onChange={handleIPTypeChange}
           />
           IPv4
         </label>
@@ -23,18 +33,14 @@ function App() {
           <input
             type='radio'
             value='IPV6'
-            checked={selectedOption === "IPV6"}
-            onChange={handleOptionChange}
+            checked={IPType === "IPV6"}
+            onChange={handleIPTypeChange}
           />
           IPv6
         </label>
       </div>
-      <div className='card'>
-        {selectedOption === "IPV4" && <IPConverter type='IPV4' />}
-      </div>
-      <div className='card'>
-        {selectedOption === "IPV6" && <IPConverter type='IPV6' />}
-      </div>
+      {IPType === "IPV4" && <IPConverter type='IPV4' />}
+      {IPType === "IPV6" && <IPConverter type='IPV6' />}
     </>
   );
 }
