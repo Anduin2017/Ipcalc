@@ -86,13 +86,16 @@ button:focus-visible {
 
 .flex {
   display: flex;
-  user-select: none;
+}
+.flex >*{
+  flex:1;
 }
 
 .buttons-grid {
   display: grid;
   grid-template-columns: repeat(8, 1fr);
   /* grid-gap: 10px; */
+  user-select: none;
 }
 
 .buttons-grid.IPV6 {
