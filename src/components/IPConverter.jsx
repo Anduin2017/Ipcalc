@@ -1,26 +1,34 @@
-import { useState, Fragment } from "react";
+import { useState, useEffect, Fragment } from "react";
 import CalculateNetworkInfo from "./CalculateNetworkInfo";
 import CopyButton from "./CopyButton";
 import { IPTypes } from "./IPTypes";
 
 const IPConverter = ({ type = "IPV4" }) => {
-  const { binaryPartLength, _subnetBits } =
+  const { defaultIP, binaryPartLength, radix, delimiter, width, _subnetBits } =
     IPTypes[type];
 
-  const [inputIP, setInputIP] = useState("");
+  const initialIP = defaultIP; // Set initial IP to all zeros (e.g., "0.0.0.0" or "::")
+
+  const [inputIP, setInputIP] = useState(initialIP);
   const [binaryIP, setBinaryIP] = useState([]);
   const [expandedIP, setExpandedIP] = useState("");
   const [subnetBits, setSubnetBits] = useState(_subnetBits.toString());
   const [isValidIP, setIsValidIP] = useState(true);
 
-  const handleInputChange = (event) => {
-    const input = event.target.value.replace(/[^a-fA-F\d.:]/g, "");
-    setInputIP(input);
+  // Process the initial IP address when the component mounts
+  useEffect(() => {
+    processInputIP(initialIP);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const processInputIP = (input) => {
+    const sanitizedInput = input.replace(/[^a-fA-F\d.:]/g, "");
+    setInputIP(sanitizedInput);
     if (type === "IPV6") {
-      const isValid = validateIPv6(input);
+      const isValid = validateIPv6(sanitizedInput);
       setIsValidIP(isValid);
       if (isValid) {
-        const expanded = expandIPv6Address(input);
+        const expanded = expandIPv6Address(sanitizedInput);
         setExpandedIP(expanded);
         const binary = ipv6ToBinary(expanded);
         setBinaryIP(binary);
@@ -30,17 +38,22 @@ const IPConverter = ({ type = "IPV4" }) => {
       }
     } else {
       // Handle IPv4
-      const isValid = validateIPv4(input);
+      const isValid = validateIPv4(sanitizedInput);
       setIsValidIP(isValid);
       if (isValid) {
-        const binary = ipv4ToBinary(input);
+        const binary = ipv4ToBinary(sanitizedInput);
         setBinaryIP(binary);
-        setExpandedIP(input);
+        setExpandedIP(sanitizedInput);
       } else {
         setBinaryIP([]);
         setExpandedIP("");
       }
     }
+  };
+
+  const handleInputChange = (event) => {
+    const input = event.target.value;
+    processInputIP(input);
   };
 
   const handleBitClick = (partIndex, bitIndex) => {
@@ -131,9 +144,18 @@ const IPConverter = ({ type = "IPV4" }) => {
   );
 };
 
+// Helper functions remain the same as before
+
 function validateIPv6(address) {
+  if (!address || address.trim() === "") {
+    return false;
+  }
+
   try {
     const expandedAddress = expandIPv6Address(address);
+    if (!expandedAddress) {
+      return false;
+    }
     const blocks = expandedAddress.split(":");
     if (blocks.length !== 8) {
       return false;
@@ -144,46 +166,43 @@ function validateIPv6(address) {
       }
     }
     return true;
-  } catch {
+  } catch (e) {
     return false;
   }
 }
 
 function expandIPv6Address(address) {
-  var expandedAddress = "";
-  var addressParts = address.split("::");
+  if (!address || address.trim() === "") {
+    return null;
+  }
+
+  let expandedAddress = "";
+  const addressParts = address.split("::");
 
   if (address.indexOf("::") === -1) {
-    // Address does not contain '::', pad zeros
-    var blocks = address.split(":");
+    // Address does not contain '::'
+    const blocks = address.split(":");
     if (blocks.length !== 8) {
-      throw new Error("Invalid IPv6 address");
+      return null;
     }
     expandedAddress = blocks
-      .map(function (block) {
-        return ("0000" + block).slice(-4);
-      })
+      .map((block) => ("0000" + block).slice(-4))
       .join(":");
   } else {
     // Address contains '::'
-    var leftPart = addressParts[0] ? addressParts[0].split(":") : [];
-    var rightPart = addressParts[1] ? addressParts[1].split(":") : [];
+    const leftPart = addressParts[0] ? addressParts[0].split(":") : [];
+    const rightPart = addressParts[1] ? addressParts[1].split(":") : [];
 
-    var missingBlocks = 8 - (leftPart.length + rightPart.length);
+    const missingBlocks = 8 - (leftPart.length + rightPart.length);
     if (missingBlocks < 0) {
-      throw new Error("Invalid IPv6 address");
+      return null;
     }
-    var zeros = [];
-    for (var i = 0; i < missingBlocks; i++) {
-      zeros.push("0000");
-    }
+    const zeros = Array(missingBlocks).fill("0000");
 
-    var newBlocks = leftPart.concat(zeros).concat(rightPart);
+    const newBlocks = leftPart.concat(zeros).concat(rightPart);
 
     expandedAddress = newBlocks
-      .map(function (block) {
-        return ("0000" + block).slice(-4);
-      })
+      .map((block) => ("0000" + block).slice(-4))
       .join(":");
   }
 
@@ -191,15 +210,12 @@ function expandIPv6Address(address) {
 }
 
 function ipv6ToBinary(ip) {
-  var expandedAddress = expandIPv6Address(ip);
-  var blocks = expandedAddress.split(":");
+  const expandedAddress = expandIPv6Address(ip);
+  const blocks = expandedAddress.split(":");
 
-  var binaryBlocks = blocks.map(function (block) {
-    var num = parseInt(block, 16);
-    var binaryStr = num.toString(2);
-    while (binaryStr.length < 16) {
-      binaryStr = "0" + binaryStr;
-    }
+  const binaryBlocks = blocks.map((block) => {
+    let num = parseInt(block, 16);
+    let binaryStr = num.toString(2).padStart(16, "0");
     return binaryStr;
   });
 
@@ -207,31 +223,23 @@ function ipv6ToBinary(ip) {
 }
 
 function binaryToIPv6(binaryBlocks) {
-  var blocks = binaryBlocks.map(function (binaryStr) {
-    var num = parseInt(binaryStr, 2);
-    var hexStr = num.toString(16);
-    while (hexStr.length < 4) {
-      hexStr = "0" + hexStr;
-    }
+  const blocks = binaryBlocks.map((binaryStr) => {
+    let num = parseInt(binaryStr, 2);
+    let hexStr = num.toString(16).padStart(4, "0");
     return hexStr;
   });
   return blocks.join(":");
 }
 
-function isMask(partIndex, bitIndex, subnetBits, binaryPartLength) {
-  if (partIndex * binaryPartLength + bitIndex < parseInt(subnetBits))
-    return true;
-  return false;
-}
+// IPv4 helper functions
 
-// Similar functions for IPv4
 function validateIPv4(address) {
-  var blocks = address.split(".");
+  const blocks = address.split(".");
   if (blocks.length !== 4) {
     return false;
   }
   for (const block of blocks) {
-    var num = parseInt(block, 10);
+    const num = parseInt(block, 10);
     if (isNaN(num) || num < 0 || num > 255) {
       return false;
     }
@@ -240,24 +248,25 @@ function validateIPv4(address) {
 }
 
 function ipv4ToBinary(ip) {
-  var blocks = ip.split(".");
-  var binaryBlocks = blocks.map(function (block) {
-    var num = parseInt(block, 10);
-    var binaryStr = num.toString(2);
-    while (binaryStr.length < 8) {
-      binaryStr = "0" + binaryStr;
-    }
+  const blocks = ip.split(".");
+  const binaryBlocks = blocks.map((block) => {
+    let num = parseInt(block, 10);
+    let binaryStr = num.toString(2).padStart(8, "0");
     return binaryStr;
   });
   return binaryBlocks;
 }
 
 function binaryToIPv4(binaryBlocks) {
-  var blocks = binaryBlocks.map(function (binaryStr) {
-    var num = parseInt(binaryStr, 2);
+  const blocks = binaryBlocks.map((binaryStr) => {
+    let num = parseInt(binaryStr, 2);
     return num.toString(10);
   });
   return blocks.join(".");
+}
+
+function isMask(partIndex, bitIndex, subnetBits, binaryPartLength) {
+  return partIndex * binaryPartLength + bitIndex < parseInt(subnetBits);
 }
 
 import PropTypes from "prop-types";
