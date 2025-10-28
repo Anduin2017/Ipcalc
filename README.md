@@ -1,6 +1,6 @@
 # IP Calc
 
-[![ManHours](https://manhours.aiursoft.cn/r/gitlab.aiursoft.cn/anduin/ipcalc.svg)](https://gitlab.aiursoft.cn/anduin/ipcalc/-/commits/master?ref_type=heads)
+[![ManHours](https://manhours.aiursoft.cn/r/gitlab.aiursoft.com/anduin/ipcalc.svg)](https://gitlab.aiursoft.com/anduin/ipcalc/-/commits/master?ref_type=heads)
 
 ![screenshot of ip calculator](./screenshot.png)
 
