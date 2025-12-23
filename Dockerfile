@@ -1,4 +1,4 @@
-FROM hub.aiursoft.com/node:21-alpine AS npm-env
+FROM hub.aiursoft.com/node:24-alpine AS npm-env
 
 WORKDIR /app
 COPY . .
