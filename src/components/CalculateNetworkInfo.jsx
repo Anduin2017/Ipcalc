@@ -1,3 +1,5 @@
+import PropTypes from "prop-types";
+
 const CalculateNetworkInfo = ({ ip, subnetBits, type }) => {
   const {
     networkAddress,
@@ -116,43 +118,46 @@ const calculateIPv4Mask = ({ ip, subnetBits }) => {
   const subnetMask = subnetMaskParts.join(delimiter);
 
   let ipClass = "";
-  let ipUsage = "Public";
+  let ipUsage = "Public (Internet)";
 
+  // Determine Class
   if (ipBinary.startsWith("0")) {
     ipClass = "Class A";
-    ipUsage += " (Large Network)";
   } else if (ipBinary.startsWith("10")) {
     ipClass = "Class B";
-    ipUsage += " (Medium Network)";
   } else if (ipBinary.startsWith("110")) {
     ipClass = "Class C";
-    ipUsage += " (Small Network)";
   } else if (ipBinary.startsWith("1110")) {
     ipClass = "Class D";
-    ipUsage = "Reserved for Multicast";
   } else if (ipBinary.startsWith("1111")) {
     ipClass = "Class E";
-    ipUsage = "Reserved";
   }
 
-  const localLanReserved = ["00001010", "101011000001", "1100000010101000"];
-  const localhostReserved = "01111111";
+  // Determine Usage
+  // Priority: Specific ranges > General Classes
+  const specialRanges = [
+    { prefix: "0".repeat(32), name: "Unspecified" },
+    { prefix: "00000000", name: "Current Network" }, // 0.0.0.0/8
+    { prefix: "1".repeat(32), name: "Broadcast" },
+    { prefix: "01111111", name: "Loopback" }, // 127.0.0.0/8
+    { prefix: "00001010", name: "Private / ULA" }, // 10.0.0.0/8
+    { prefix: "101011000001", name: "Private / ULA" }, // 172.16.0.0/12
+    { prefix: "1100000010101000", name: "Private / ULA" }, // 192.168.0.0/16
+    { prefix: "1010100111111110", name: "Link-Local" }, // 169.254.0.0/16
+    { prefix: "0110010001", name: "Carrier-grade NAT (CGNAT)" }, // 100.64.0.0/10
+    { prefix: "1110", name: "Multicast" }, // 224.0.0.0/4
+    { prefix: "110000000000000000000010", name: "Documentation" }, // 192.0.2.0/24
+    { prefix: "110001100011001101100100", name: "Documentation" }, // 198.51.100.0/24
+    { prefix: "110010110000000001110001", name: "Documentation" }, // 203.0.113.0/24
+    { prefix: "110001100001001", name: "Benchmarking" }, // 198.18.0.0/15
+    { prefix: "110000000101100001100011", name: "6to4 Relay" }, // 192.88.99.0/24
+    { prefix: "1111", name: "Reserved" } // 240.0.0.0/4
+  ];
 
-  for (let i = 0; i < localLanReserved.length; i++) {
-    let reserved = localLanReserved[i];
-    if (ipBinary.startsWith(reserved)) {
-      ipUsage = "Local Area Network (LAN)";
-      if (subnetBits < reserved.length) {
-        ipUsage += " (Unusable)";
-      }
+  for (const range of specialRanges) {
+    if (ipBinary.startsWith(range.prefix)) {
+      ipUsage = range.name;
       break;
-    }
-  }
-
-  if (ipBinary.startsWith(localhostReserved)) {
-    ipUsage = "Localhost Loopback";
-    if (subnetBits < localhostReserved.length) {
-      ipUsage += " (Unusable)";
     }
   }
 
@@ -207,27 +212,39 @@ const calculateIPv6Mask = ({ ip, subnetBits }) => {
   const subnetMask = null; // Not applicable for IPv6
 
   // Determine IP Type and Usage
-  let ipClass = "";
-  let ipUsage = "";
+  let ipClass = "Global Unicast";
+  let ipUsage = "Public";
 
-  if (ipBinary === "0".repeat(128)) {
-    ipClass = "Unspecified Address";
-    ipUsage = "Cannot be assigned";
-  } else if (ipBinary.startsWith("0".repeat(127) + "1")) {
-    ipClass = "Loopback Address";
-    ipUsage = "Localhost";
-  } else if (ipBinary.startsWith("1111111010")) {
-    ipClass = "Link-Local Unicast";
-    ipUsage = "Used on a single link";
-  } else if (ipBinary.startsWith("1111110")) {
-    ipClass = "Unique Local Unicast";
-    ipUsage = "Private addressing";
-  } else if (ipBinary.startsWith("11111111")) {
-    ipClass = "Multicast";
-    ipUsage = "Multicast addressing";
-  } else {
-    ipClass = "Global Unicast";
-    ipUsage = "Public addressing";
+  const specialRanges = [
+    { prefix: "0".repeat(128), name: "Unspecified" }, // ::/128
+    { prefix: "0".repeat(127) + "1", name: "Loopback" }, // ::1/128
+    { prefix: "1111110", name: "Private / ULA" }, // fc00::/7
+    { prefix: "1111111010", name: "Link-Local" }, // fe80::/10
+    { prefix: "11111111", name: "Multicast" }, // ff00::/8
+    { prefix: "00100000000000010000110110111000", name: "Documentation" }, // 2001:db8::/32
+    { prefix: "0".repeat(80) + "1".repeat(16), name: "IPv4-mapped" }, // ::ffff:0:0/96
+    { prefix: "0010000000000010", name: "6to4" }, // 2002::/16
+    { prefix: "00000000011001001111111110011011" + "0".repeat(64), name: "NAT64" } // 64:ff9b::/96
+  ];
+
+  let matched = false;
+  for (const range of specialRanges) {
+    if (ipBinary.startsWith(range.prefix)) {
+      ipClass = range.name;
+      ipUsage = range.name; 
+      matched = true;
+      break;
+    }
+  }
+
+  if (!matched) {
+    if (ipBinary.startsWith("001")) { // 2000::/3
+      ipClass = "Global Unicast";
+      ipUsage = "Global Public Internet";
+    } else {
+      ipClass = "Reserved / Unassigned";
+      ipUsage = "Reserved";
+    }
   }
 
   // 计算可用设备数
@@ -342,7 +359,6 @@ function formatBigInt(bigint) {
   return bigint.toLocaleString();
 };
 
-import PropTypes from "prop-types";
 CalculateNetworkInfo.propTypes = {
   ip: PropTypes.string.isRequired,
   subnetBits: PropTypes.string.isRequired,
